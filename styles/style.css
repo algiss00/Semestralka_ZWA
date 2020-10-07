@@ -1,0 +1,40 @@
+body {
+    background: #eee;
+}
+
+#frame {
+    border: solid gray 1px;
+    width: 20%;
+    border-radius: 5px;
+    margin: 100px auto;
+    background: white;
+    padding: 50px;
+}
+
+#submit {
+    color: #fff;
+    background: #333ab7;
+    padding: 5px;
+    margin-left: 40%;
+}
+
+#btn {
+    color: #fff;
+    background: #333ab7;
+    padding: 5px;
+    margin-left: 41.5%;
+}
+
+#backSub {
+    color: #fff;
+    background: #333ab7;
+    padding: 5px;
+    margin-left: 40%;
+}
+
+#signUp {
+    color: #fff;
+    background: #333ab7;
+    padding: 5px;
+    margin-left: 35%;
+}

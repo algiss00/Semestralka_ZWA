@@ -1,0 +1,38 @@
+
+-------------------------------------------------------------------
+
+    GET:
+
+    /api/task.php - array of task current usera
+    /api/task.php?id=? - return task by id
+    /api/category.php - array of oredered categories default
+    /api/category.php?id=? - return category by Id
+    /api/category.php?task=all&category_id=? - array of relation(category<->task) user can get only his tasks of his created category
+    /api/user.php - return authorized user
+
+    POST:
+
+    /api/task.php - create new task
+    /api/category.php - create new category
+    /api/category.php?task_id=?&category_id=? - put task to category
+
+    PUT:
+
+    /api/task.php?id=? - update existing task - User can only his task
+    /api/task.php?updateStatus_task_id=?&status=? - update only status of existing task - only his task
+    /api/category.php?id=? - update existing category
+    /api/user.php - update authorized user
+
+    DELETE:
+
+    /api/task.php?id=? - delete task by id
+    /api/category.php?id=? - delete category by id
+    /api/category.php?category_id=?&task_id=? - delete task from category by id
+
+//prirazeni tasku k userum future
+
+//USER VIDI JEN SVE TASKY A JEN SVE CUSTOM CATEGORIES
+//todo catch error in sql db like delete foreign keys
+//category zvlast pro kazdeho uzivatele vlastni category
+//to do rozdelit na jednoduche funkcie s parametry tim mensi funkce tim je lepsi!
+json encode for preobrozovat v json
