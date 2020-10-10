@@ -21,7 +21,7 @@ if ($method == "POST") {
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
                 error("sql error", 400);
-                mysqli_error($connect);
+                mysqli_error($conn);
                 exit();
             }
             $result = mysqli_stmt_get_result($stmt);

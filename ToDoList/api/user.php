@@ -1,6 +1,5 @@
 <?php
-if(!isset($_SESSION))
-{
+if (!isset($_SESSION)) {
     session_start();
 }
 require "../dbConnect/dbConn.php";
@@ -13,4 +12,6 @@ if ($method == "GET") {
     $res = file_get_contents("php://input", true);
     $user = json_decode($res);
     updateUser($user->username, $user->password, $user->email, $conn);
+} else if ($method == "POST") {
+    addUser($_POST, $conn);
 }

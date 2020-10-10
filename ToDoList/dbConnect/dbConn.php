@@ -248,6 +248,28 @@ function getAllTaskFromCategory($categId, $connect)
     }
 }
 
+function addUser($data, $connect)
+{
+    $username = $data['username'];
+    $password = $data['password'];
+    $email = $data['email'];
+    $sql = "insert into users(username, password, email) values (?, ?, ?)";
+    $stmt = mysqli_stmt_init($connect);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error 1", 400);
+        exit();
+    } else {
+        $hashedPwd = password_hash($password, PASSWORD_DEFAULT);
+        mysqli_stmt_bind_param($stmt, "sss", $username, $hashedPwd, $email);
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error 2", 400);
+            mysqli_error($connect);
+            exit();
+        }
+        success("create user success", 201);
+    }
+}
+
 function addTask($data, $connect)
 {
     if (isLogin() === null) {
@@ -271,7 +293,7 @@ function addTask($data, $connect)
             mysqli_error($connect);
             exit();
         }
-        success("create success", 201);
+        success("create task success", 201);
     }
 }
 
@@ -614,4 +636,3 @@ function existCategory($catId, $connect)
         return true;
     }
 }
-
