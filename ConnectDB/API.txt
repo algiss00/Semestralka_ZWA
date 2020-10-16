@@ -29,7 +29,7 @@
     /api/category.php?id=? - delete category by id
     /api/category.php?category_id=?&task_id=? - delete task from category by id
 
-PRI VYTVORENI UCTU SE MUSI VYTVORIT CATEGORY TODAY TOMMOROW UPCOMMING SOMEDAY
+PRI VYTVORENI UCTU SE MUSI VYTVORIT CATEGORY TODAY TOMMOROW SOMEDAY
 //prirazeni tasku k userum future
 
 //USER VIDI JEN SVE TASKY A JEN SVE CUSTOM CATEGORIES

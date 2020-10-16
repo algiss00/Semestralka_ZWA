@@ -11,7 +11,7 @@ if ($method == "GET") {
 } else if ($method == "PUT") {
     $res = file_get_contents("php://input", true);
     $user = json_decode($res);
-    updateUser($user->username, $user->password, $user->email, $conn);
+    updateUser($user->username, $user->password, $user->email, $user->name, $user->surname, $conn);
 } else if ($method == "POST") {
     addUser($_POST, $conn);
 }
