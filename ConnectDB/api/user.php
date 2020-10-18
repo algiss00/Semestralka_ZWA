@@ -11,7 +11,11 @@ if ($method == "GET") {
 } else if ($method == "PUT") {
     $res = file_get_contents("php://input", true);
     $user = json_decode($res);
-    updateUser($user->username, $user->password, $user->email, $user->name, $user->surname, $conn);
+    if (isset($_GET['changePassword'])) {
+        updateUserPass($user->currentPassword, $user->newPassword, $conn);
+    } else {
+        updateUser($user->username, $user->email, $user->name, $user->surname, $conn);
+    }
 } else if ($method == "POST") {
     addUser($_POST, $conn);
 }

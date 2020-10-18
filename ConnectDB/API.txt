@@ -19,9 +19,13 @@
     PUT:
 
     /api/task.php?id=? - update existing task - User can only his task
-    /api/task.php?updateStatus_task_id=?&status=? - update only status of existing task - only his task
     /api/category.php?id=? - update existing category
     /api/user.php - update authorized user
+    /api/user.php?changePassword - change password
+
+-- NE POUZIVA SE
+/api/task.php?updateStatus_task_id=?&status=? - update only status of existing task - only his task
+-- NE POUZIVA SE
 
     DELETE:
 

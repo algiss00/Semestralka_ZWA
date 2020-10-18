@@ -301,22 +301,21 @@ function addCategory($title, $position, $connect)
     }
 }
 
-function updateUser($username, $password, $email, $name, $surname, $connect)
+function updateUser($username, $email, $name, $surname, $connect)
 {
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
     $sql = "UPDATE users
-            SET username = ?, password= ?, email=?, name=?, surname=?
+            SET username = ?, email=?, name=?, surname=?
             WHERE id = ?";
     $stmt = mysqli_stmt_init($connect);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
         error("sql error", 400);
         exit();
     } else {
-        $hashedPwd = password_hash($password, PASSWORD_DEFAULT);
-        mysqli_stmt_bind_param($stmt, "sssssi", $username, $hashedPwd, $email, $name, $surname, $user_id);
+        mysqli_stmt_bind_param($stmt, "ssssi", $username, $email, $name, $surname, $user_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
             error("sql error", 400);
@@ -324,6 +323,35 @@ function updateUser($username, $password, $email, $name, $surname, $connect)
             exit();
         }
         success("Update current user success", 200);
+    }
+}
+
+function updateUserPass($currnetPass, $newPass, $connect)
+{
+    if (isLogin() === null) {
+        exit();
+    }
+    $user_id = isLogin();
+    if (!checkPass($currnetPass, $user_id, $connect)) {
+        exit();
+    }
+    $sql = "UPDATE users
+            SET password = ?
+            WHERE id = ?";
+    $stmt = mysqli_stmt_init($connect);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 400);
+        exit();
+    } else {
+        $hashedPwd = password_hash($newPass, PASSWORD_DEFAULT);
+        mysqli_stmt_bind_param($stmt, "si", $hashedPwd, $user_id);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 400);
+            mysqli_error($connect);
+            exit();
+        }
+        success("Change password success", 200);
     }
 }
 
@@ -354,36 +382,6 @@ function updateTask($taskId, $title, $description, $deadline, $status, $connect)
                 exit();
             }
             success("Update task success", 200);
-        }
-    }
-}
-
-function updateStatusTask($taskId, $status, $connect)
-{
-    if (!existTask($taskId, $connect)) {
-        error("Task not found", 404);
-        exit();
-    }
-    if (isOwnerOfTask($taskId, $connect) == false) {
-        error("Forbidden", 403);
-        exit();
-    } else if (isOwnerOfTask($taskId, $connect) == true) {
-        $sql = "UPDATE task
-            SET status=?
-            WHERE Id = ?";
-        $stmt = mysqli_stmt_init($connect);
-        if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
-            exit();
-        } else {
-            mysqli_stmt_bind_param($stmt, "si", $status, $taskId);
-            //выполнить
-            if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
-                exit();
-            }
-            success("Update status of task success", 200);
         }
     }
 }
@@ -672,6 +670,36 @@ function isOwnerOfCategory($categoryId, $connect)
     if ($row['creator_id'] == $user_id) {
         return true;
     } else {
+        return false;
+    }
+}
+
+function checkPass($currnetPass, $user_id, $connect)
+{
+    $sql = "select password from users where id=?";
+    $stmt = mysqli_stmt_init($connect);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 400);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 400);
+            mysqli_error($connect);
+            exit();
+        }
+        $result = mysqli_stmt_get_result($stmt);
+        if ($row = mysqli_fetch_assoc($result)) {
+            $passCheck = password_verify($currnetPass, $row['password']);
+            if (!$passCheck) {
+                error("wrong password", 400);
+                return false;
+            } else {
+                return true;
+            }
+        }
+        error("No user", 404);
         return false;
     }
 }
