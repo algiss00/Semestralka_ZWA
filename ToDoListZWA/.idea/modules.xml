@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ConnectDB.iml" filepath="$PROJECT_DIR$/.idea/ConnectDB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ToDoListZWA.iml" filepath="$PROJECT_DIR$/.idea/ToDoListZWA.iml" />
     </modules>
   </component>
 </project>

@@ -2,7 +2,7 @@
 if (!isset($_SESSION)) {
     session_start();
 }
-require "../dbConnect/dbConn.php";
+require "../methodsForApi/dbConnectMethods.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 

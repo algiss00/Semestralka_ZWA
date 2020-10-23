@@ -15,6 +15,9 @@
     /api/task.php - create new task
     /api/category.php - create new category
     /api/category.php?task_id=?&category_id=? - put task to category
+    /api/login.php?username=x&password=x - login
+    /api/logout.php - logout
+    /api/user.php - create new user
 
     PUT:
 
@@ -22,10 +25,6 @@
     /api/category.php?id=? - update existing category
     /api/user.php - update authorized user
     /api/user.php?changePassword - change password
-
--- NE POUZIVA SE
-/api/task.php?updateStatus_task_id=?&status=? - update only status of existing task - only his task
--- NE POUZIVA SE
 
     DELETE:
 
@@ -36,7 +35,7 @@
 PRI VYTVORENI UCTU SE MUSI VYTVORIT CATEGORY TODAY TOMMOROW SOMEDAY
 //prirazeni tasku k userum future
 
-//USER VIDI JEN SVE TASKY A JEN SVE CUSTOM CATEGORIES
+//USER VIDI JEN SVE TASKY
 //todo catch error in sql db like delete foreign keys
 //category zvlast pro kazdeho uzivatele vlastni category
 //to do rozdelit na jednoduche funkcie s parametry tim mensi funkce tim je lepsi!

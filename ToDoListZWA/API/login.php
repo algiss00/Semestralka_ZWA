@@ -4,7 +4,7 @@ if (!isset($_SESSION)) {
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
-require '../dbConnect/dbConn.php';
+require "../methodsForApi/dbConnectMethods.php";
 
 if ($method == "POST") {
     if (isset($_GET['username']) && isset($_GET['password'])) {
