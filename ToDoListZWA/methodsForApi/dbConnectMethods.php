@@ -17,27 +17,28 @@ $dbname = 'todolistdb';
 $conn = mysqli_connect('localhost', $user, $password, $dbname)
 or die("Unable to connect" . mysqli_connect_error());
 
-function getTask($taskId, $connect)
+function getTask($taskId)
 {
-    if (!existTask($taskId, $connect)) {
-        error("Task not found", 404);
+    global $conn;
+    if (!existTask($taskId)) {
+        error("Task not found", 200);
         exit();
     }
-    if (isOwnerOfTask($taskId, $connect) == false) {
+    if (isOwnerOfTask($taskId) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfTask($taskId, $connect) == true) {
+    } else {
         $sql = "select * from task where Id=?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "i", $taskId);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             //result
@@ -48,55 +49,89 @@ function getTask($taskId, $connect)
     }
 }
 
-function getCategory($categoryId, $connect)
+function getGroupCategory()
 {
-    if (!existCategory($categoryId, $connect)) {
-        error("Category not found", 404);
-        exit();
-    }
-    if (isOwnerOfCategory($categoryId, $connect) == false) {
-        error("Forbidden", 403);
-        exit();
-    } else if (isOwnerOfCategory($categoryId, $connect) == true) {
-        $sql = "select * from category where id=?";
-        $stmt = mysqli_stmt_init($connect);
-        if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
-            exit();
-        } else {
-            mysqli_stmt_bind_param($stmt, "i", $categoryId);
-            //выполнить
-            if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
-                exit();
-            }
-            //result
-            $result = mysqli_stmt_get_result($stmt);
-            $res = mysqli_fetch_assoc($result);
-            return json_encode($res);
-        }
-    }
-}
-
-
-function getCurrentUser($connect)
-{
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
-    $sql = "select * from users where id=?";
-    $stmt = mysqli_stmt_init($connect);
+    $sql = "select title, id, count(task_id)
+            from category as cat
+            left join relation_task_categ rtc
+                   on cat.id = rtc.category_id
+            where cat.creator_id =?
+            GROUP BY title, id
+            Order by count(task_id) DESC";
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
+            exit();
+        }
+        $result = mysqli_stmt_get_result($stmt);
+        $res = mysqli_fetch_all($result);
+        return json_encode($res);
+    }
+}
+
+function getCategory($categoryId)
+{
+    global $conn;
+    if (!existCategory($categoryId)) {
+        error("Category not found", 200);
+        exit();
+    }
+    if (isOwnerOfCategory($categoryId) == false) {
+        error("Forbidden", 403);
+        exit();
+    } else {
+        $sql = "select * from category where id=?";
+        $stmt = mysqli_stmt_init($conn);
+        if (!mysqli_stmt_prepare($stmt, $sql)) {
+            error("sql error", 500);
+            exit();
+        } else {
+            mysqli_stmt_bind_param($stmt, "i", $categoryId);
+            //выполнить
+            if (!mysqli_stmt_execute($stmt)) {
+                error("sql error", 500);
+                mysqli_error($conn);
+                exit();
+            }
+            //result
+            $result = mysqli_stmt_get_result($stmt);
+            $res = mysqli_fetch_assoc($result);
+            return json_encode($res);
+        }
+    }
+}
+
+
+function getCurrentUser()
+{
+    global $conn;
+    if (isLogin() === null) {
+        exit();
+    }
+    $user_id = isLogin();
+    $sql = "select id, username, email, name, surname  from users where id=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         //result
@@ -106,15 +141,16 @@ function getCurrentUser($connect)
     }
 }
 
-function getAllCategoriesOfUser($connect)
+function getAllCategoriesOfUser()
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
-    $categories = $connect->query("select * from category
+    $categories = $conn->query("select * from category
         where creator_id = '$user_id' order by position_list ASC")
-    or die(mysqli_error($connect));
+    or die(mysqli_error($conn));
     if ($categories->num_rows > 0) {
         $arr = [];
         while ($categ = $categories->fetch_assoc()) {
@@ -122,18 +158,19 @@ function getAllCategoriesOfUser($connect)
         }
         return json_encode($arr);
     } else {
-        error("No category", 404);
+        error("No category", 200);
     }
 }
 
-function getAllUsersTasks($connect)
+function getAllUsersTasks()
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
-    $tasks = $connect->query("select * from task where creator_id='$user_id' order by deadline ASC ")
-    or die(mysqli_error($connect));
+    $tasks = $conn->query("select * from task where creator_id='$user_id' order by deadline ASC ")
+    or die(mysqli_error($conn));
     if ($tasks->num_rows > 0) {
         $arr = [];
         while ($tasks2 = $tasks->fetch_assoc()) {
@@ -141,33 +178,34 @@ function getAllUsersTasks($connect)
         }
         return json_encode($arr);
     } else {
-        error("No tasks", 404);
+        error("No tasks", 200);
     }
 }
 
-function getAllTaskFromCategory($categId, $connect)
+function getAllTaskFromCategory($categId)
 {
-    if (!existCategory($categId, $connect)) {
-        error("Category not found", 404);
+    global $conn;
+    if (!existCategory($categId)) {
+        error("Category not found", 200);
         exit();
     }
-    if (isOwnerOfCategory($categId, $connect) == false) {
+    if (isOwnerOfCategory($categId) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfCategory($categId, $connect) == true) {
+    } else {
         $sql = "SELECT relation_task_categ.task_id, relation_task_categ.category_id, task.*
             FROM relation_task_categ, task
             WHERE (relation_task_categ.category_id = ?) AND (task.Id = relation_task_categ.task_id)";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "i", $categId);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             $result = mysqli_stmt_get_result($stmt);
@@ -176,96 +214,148 @@ function getAllTaskFromCategory($categId, $connect)
                 while ($res = mysqli_fetch_assoc($result)) {
                     array_push($arr, $res);
                 }
-                return json_encode($arr);
+                success($arr, 200);
             } else {
-                error("No tasks in category", 404);
+                error("No tasks in category", 200);
             }
         }
     }
 }
 
-function addUser($data, $connect)
+function getIdOfCategory($title, $creatorId)
 {
-    $username = $data['username'];
-    $password = $data['password'];
-    $email = $data['email'];
-    $name = $data['name'];
-    $surname = $data['surname'];
-    if (isUserExist($username, $email, $connect) == true) {
-        error("username or email is taken", 400);
+    global $conn;
+    $sql = "select id from category where title=? and creator_id=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "si", $title, $creatorId);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 500);
+            mysqli_error($conn);
+            exit();
+        }
+        //result
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result->num_rows > 0) {
+            $res = mysqli_fetch_assoc($result);
+            return json_encode($res);
+        } else {
+            return null;
+        }
+    }
+}
+
+function addUser($username, $password, $name, $surname, $email)
+{
+    global $conn;
+    if (isUserExist($username, $email) == true) {
+        error("username or email is taken", 409);
+        exit();
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        error("email is not valid", 400);
         exit();
     }
     $sql = "insert into users(username, password, email, name, surname) values (?, ?, ?, ?, ?)";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error 1", 400);
+        error("sql error 1", 500);
         exit();
     } else {
         $hashedPwd = password_hash($password, PASSWORD_DEFAULT);
         mysqli_stmt_bind_param($stmt, "sssss", $username, $hashedPwd, $email, $name, $surname);
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error 2", 400);
-            mysqli_error($connect);
+            error("sql error 2", 500);
+            mysqli_error($conn);
             exit();
         }
-        $last_id = $connect->insert_id;
-        createDefaultCategory($last_id, $connect);
-        success("Create user success", 201);
+        $last_id = $conn->insert_id;
+        createDefaultCategory($last_id);
+        postSuccess("Create user success", $last_id);
     }
 }
 
-function addTask($data, $connect)
+function validateDate($date, $format = 'Y-m-d')
 {
+    $d = DateTime::createFromFormat($format, $date);
+    return $d && $d->format($format) === $date;
+}
+
+function addTask($title, $description, $deadline, $status, $category)
+{
+    global $conn;
+    //validate deadline, knihovny
+    if (isLogin() === null) {
+        exit();
+    }
+    if (!validateDate($deadline)) {
+        error("Deadline is not valid, it must be in format YYYY-MM-DD", 400);
+        exit();
+    }
+    $user_id = isLogin();
+    if (existCategoryTitle($category, $user_id) === false) {
+        error("Category dont exists", 200);
+        exit();
+    }
+    $sql = "insert into task(title, description, deadline, creator_id, status) values (?, ?, ?, ?, ?)";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "sssis", $title, $description, $deadline, $user_id, $status);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 500);
+            mysqli_error($conn);
+            exit();
+        }
+        $last_id = $conn->insert_id;
+        //addTaskToCategory($last_id, $cId->{"id"});
+        postSuccess("create task success", $last_id);
+    }
+}
+
+function addTaskToCategory($task_id, $category)
+{
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
-    $title = $data['title'];
-    $description = $data['description'];
-    $deadline = $data['deadline'];
-
-    $sql = "insert into task(title, description, deadline, creator_id) values (?, ?, ?, ?)";
-    $stmt = mysqli_stmt_init($connect);
-    if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
-        exit();
-    } else {
-        mysqli_stmt_bind_param($stmt, "sssi", $title, $description, $deadline, $user_id);
-        //выполнить
-        if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
-            exit();
-        }
-        success("create task success", 201);
-    }
-}
-
-function addToRelationTaskCateg($task_id, $category_id, $connect)
-{
-    if (!(existTask($task_id, $connect)) || !(existCategory($category_id, $connect))) {
-        error("Task or Category not found", 404);
+    $catId = getIdOfCategory($category, $user_id);
+    $category_id = json_decode($catId);
+    if ($catId === null) {
+        error("Not exist category", 200);
         exit();
     }
-    if (isOwnerOfCategory($category_id, $connect) == false || isOwnerOfTask($task_id, $connect) == false) {
+    if (!(existTask($task_id)) || !(existCategory($category_id->{"id"}))) {
+        error("Task or Category not found", 200);
+        exit();
+    }
+    if (isOwnerOfCategory($category_id->{"id"}) == false || isOwnerOfTask($task_id) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfCategory($category_id, $connect) == true && isOwnerOfTask($task_id, $connect) == true) {
-        if (existSameRelation($category_id, $task_id, $connect) === true) {
-            error("Same relation exist", 400);
+    } else if (isOwnerOfCategory($category_id->{"id"}) == true && isOwnerOfTask($task_id) == true) {
+        if (existSameRelation($task_id) === true) {
+            error("Same relation exist", 409);
             exit();
         }
         $sql = "insert into relation_task_categ(task_id, category_id) values (?, ?)";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
-            mysqli_stmt_bind_param($stmt, "ii", $task_id, $category_id);
+            mysqli_stmt_bind_param($stmt, "ii", $task_id, $category_id->{"id"});
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Add task to category success", 200);
@@ -273,82 +363,110 @@ function addToRelationTaskCateg($task_id, $category_id, $connect)
     }
 }
 
-function addCategory($title, $position, $connect)
+function addCategory($title, $position)
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
+    if (!is_int($position)) {
+        error("position isnt Integer", 400);
+        exit();
+    }
     $user_id = isLogin();
-    if (existCategoryTitle($title, $connect)) {
-        error("Category exist", 400);
+    if (existCategoryTitle($title, $user_id)) {
+        error("Category exist", 409);
         exit();
     } else {
         $sql = "insert into category(title, position_list, creator_id) values (?, ?, ?)";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "sii", $title, $position, $user_id);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
-            success("Create category success", 201);
+            $last_id = $conn->insert_id;
+            postSuccess("Create category success", $last_id);
         }
     }
 }
 
-function updateUser($username, $email, $name, $surname, $connect)
+function updateUser($username, $email, $name, $surname)
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        error("email is not valid", 400);
+        exit();
+    }
     $user_id = isLogin();
+    $userEmail = getCurrentUser();
+    $arr = (array)json_decode($userEmail, true);
+
+    if ($arr["email"] !== $email) {
+        if (emailExist($email) == true) {
+            error("email is taken", 409);
+            exit();
+        }
+    }
+    if ($arr["username"] !== $username) {
+        if (usernameExist($username) == true) {
+            error("username is taken", 409);
+            exit();
+        }
+    }
+
     $sql = "UPDATE users
             SET username = ?, email=?, name=?, surname=?
             WHERE id = ?";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "ssssi", $username, $email, $name, $surname, $user_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         success("Update current user success", 200);
     }
 }
 
-function updateUserPass($currnetPass, $newPass, $connect)
+function updateUserPass($currnetPass, $newPass)
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
-    if (!checkPass($currnetPass, $user_id, $connect)) {
+    if (!checkPass($currnetPass, $user_id)) {
         exit();
     }
     $sql = "UPDATE users
             SET password = ?
             WHERE id = ?";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         $hashedPwd = password_hash($newPass, PASSWORD_DEFAULT);
         mysqli_stmt_bind_param($stmt, "si", $hashedPwd, $user_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         success("Change password success", 200);
@@ -356,29 +474,34 @@ function updateUserPass($currnetPass, $newPass, $connect)
 }
 
 
-function updateTask($taskId, $title, $description, $deadline, $status, $connect)
+function updateTask($taskId, $title, $description, $deadline, $status)
 {
-    if (!existTask($taskId, $connect)) {
-        error("Task not found", 404);
+    global $conn;
+    if (!existTask($taskId)) {
+        error("Task not found", 200);
         exit();
     }
-    if (isOwnerOfTask($taskId, $connect) == false) {
+    if (!validateDate($deadline)) {
+        error("Deadline is not valid, it must be in format YYYY-MM-DD", 400);
+        exit();
+    }
+    if (isOwnerOfTask($taskId) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfTask($taskId, $connect) == true) {
+    } else if (isOwnerOfTask($taskId) == true) {
         $sql = "UPDATE task
             SET title = ?, description= ?, deadline=?, status=?
             WHERE Id = ?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "ssssi", $title, $description, $deadline, $status, $taskId);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Update task success", 200);
@@ -386,25 +509,30 @@ function updateTask($taskId, $title, $description, $deadline, $status, $connect)
     }
 }
 
-function updateCategory($category_id, $title, $position_list, $connect)
+function updateCategory($category_id, $title, $position_list)
 {
-    if (isOwnerOfCategory($category_id, $connect) == false) {
+    global $conn;
+    if (!is_int($position_list)) {
+        error("position isnt Integer", 400);
+        exit();
+    }
+    if (isOwnerOfCategory($category_id) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfCategory($category_id, $connect) == true) {
+    } else if (isOwnerOfCategory($category_id) == true) {
         $sql = "UPDATE category
             SET title = ?, position_list= ?
             WHERE id = ?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "sii", $title, $position_list, $category_id);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Update category success", 200);
@@ -412,27 +540,29 @@ function updateCategory($category_id, $title, $position_list, $connect)
     }
 }
 
-function deleteCategory($category_id, $connect)
+function deleteCategory($category_id)
 {
-    if (!existCategory($category_id, $connect)) {
-        error("Category not found", 404);
+    global $conn;
+    if (!existCategory($category_id)) {
+        error("Category not found", 200);
         exit();
     }
-    if (isOwnerOfCategory($category_id, $connect) == false) {
+    if (isOwnerOfCategory($category_id) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfCategory($category_id, $connect) == true) {
+    } else {
+        deleteAllTasksFromCategory($category_id);
         $sql = "DELETE FROM category WHERE id=?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "i", $category_id);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Delete success", 200);
@@ -440,27 +570,28 @@ function deleteCategory($category_id, $connect)
     }
 }
 
-function deleteTaskFromCategory($category_id, $task_id, $connect)
+function deleteTaskFromCategory($category_id, $task_id)
 {
-    if (!(existTask($task_id, $connect)) || !(existCategory($category_id, $connect))) {
-        error("Task or Category not found", 404);
+    global $conn;
+    if (!(existTask($task_id)) || !(existCategory($category_id))) {
+        error("Task or Category not found", 200);
         exit();
     }
-    if (isOwnerOfTask($task_id, $connect) == false) {
+    if (isOwnerOfTask($task_id) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfTask($task_id, $connect) == true) {
+    } else if (isOwnerOfTask($task_id) == true) {
         $sql = "DELETE FROM relation_task_categ WHERE category_id=? AND task_id=?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "ii", $category_id, $task_id);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Delete success", 200);
@@ -468,27 +599,49 @@ function deleteTaskFromCategory($category_id, $task_id, $connect)
     }
 }
 
-function deleteTask($taskId, $connect)
+function deleteAllTasksFromCategory($categoryId)
 {
-    if (!existTask($taskId, $connect)) {
-        error("Task not found", 404);
+    global $conn;
+    $sql = "delete t1 from task as t1 left join relation_task_categ as r1 on r1.task_id = t1.Id where r1.category_id=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $categoryId);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 500);
+            mysqli_error($conn);
+            exit();
+        }
+        success("Delete all tasks of category success", 200);
+    }
+
+}
+
+function deleteTask($taskId)
+{
+    global $conn;
+    if (!existTask($taskId)) {
+        error("Task not found", 200);
         exit();
     }
-    if (isOwnerOfTask($taskId, $connect) == false) {
+    if (isOwnerOfTask($taskId) == false) {
         error("Forbidden", 403);
         exit();
-    } else if (isOwnerOfTask($taskId, $connect) == true) {
+    } else {
         $sql = "DELETE FROM task WHERE Id=?";
-        $stmt = mysqli_stmt_init($connect);
+        $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "i", $taskId);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
-                mysqli_error($connect);
+                error("sql error", 500);
+                mysqli_error($conn);
                 exit();
             }
             success("Delete success", 200);
@@ -496,19 +649,46 @@ function deleteTask($taskId, $connect)
     }
 }
 
-function existTask($taskId, $connect)
+function deleteUser()
 {
-    $sql = "select * from task where Id=?";
-    $stmt = mysqli_stmt_init($connect);
+    global $conn;
+    if (isLogin() === null) {
+        exit();
+    }
+    $user_id = isLogin();
+    $sql = "DELETE FROM users WHERE id=?";
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        //выполнить
+        if (!mysqli_stmt_execute($stmt)) {
+            error("sql error", 500);
+            mysqli_error($conn);
+            exit();
+        }
+        success("Delete success", 200);
+        session_unset();
+        session_destroy();
+    }
+}
+
+function existTask($taskId)
+{
+    global $conn;
+    $sql = "select * from task where Id=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "i", $taskId);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         //result
@@ -520,19 +700,20 @@ function existTask($taskId, $connect)
     }
 }
 
-function existCategory($catId, $connect)
+function existCategory($catId)
 {
+    global $conn;
     $sql = "select * from category where id=?";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "i", $catId);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         //result
@@ -544,18 +725,19 @@ function existCategory($catId, $connect)
     }
 }
 
-function existCategoryTitle($title, $connect)
+function existCategoryTitle($title, $creatorId)
 {
-    $sql = "select title from category where title=?";
-    $stmt = mysqli_stmt_init($connect);
+    global $conn;
+    $sql = "select title from category where title=? and creator_id=?";
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
-        mysqli_stmt_bind_param($stmt, "s", $title);
+        mysqli_stmt_bind_param($stmt, "si", $title, $creatorId);
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         mysqli_stmt_store_result($stmt);
@@ -567,39 +749,47 @@ function existCategoryTitle($title, $connect)
     }
 }
 
-function createDefaultCategory($userId, $connect)
+/**
+ * pro nove uzivatele vzdy se pridaji 3 category
+ */
+function createDefaultCategory($userId)
 {
-    $sql1 = "insert into category(title, position_list, creator_id) values ('Today', 0, $userId)";
-    $sql2 = "insert into category(title, position_list, creator_id) values ('Tomorrow', 1, $userId)";
-    $sql3 = "insert into category(title, position_list, creator_id) values ('SomeDay', 2, $userId)";
+    global $conn;
+    $sql1 = "insert into category(title, position_list, creator_id) values ('Today', 1, $userId)";
+    $sql2 = "insert into category(title, position_list, creator_id) values ('Tomorrow', 2, $userId)";
+    $sql3 = "insert into category(title, position_list, creator_id) values ('SomeDay', 3, $userId)";
 
-    if ($connect->query($sql1) === False) {
-        error("Error insert Default category Today", 400);
+    if ($conn->query($sql1) === False) {
+        error("Error insert Default category Today", 500);
         exit();
-    } else if ($connect->query($sql2) === False) {
-        error("Error insert Default category Tomorrow", 400);
+    } else if ($conn->query($sql2) === False) {
+        error("Error insert Default category Tomorrow", 500);
         exit();
-    } else if ($connect->query($sql3) === False) {
-        error("Error insert Default category Someday", 400);
+    } else if ($conn->query($sql3) === False) {
+        error("Error insert Default category Someday", 500);
         exit();
     }
 }
 
-function existSameRelation($category_id, $task_id, $connect)
+/**
+ * jiz existuje urcity task uvnitr urciteho category
+ */
+function existSameRelation($task_id)
 {
+    global $conn;
     $sql = "SELECT task_id, category_id
             FROM relation_task_categ
-            WHERE category_id = ? AND task_id = ?";
-    $stmt = mysqli_stmt_init($connect);
+            WHERE task_id = ?";
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
-        mysqli_stmt_bind_param($stmt, "ii", $category_id, $task_id);
+        mysqli_stmt_bind_param($stmt, "i", $task_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         $result = mysqli_stmt_get_result($stmt);
@@ -611,23 +801,26 @@ function existSameRelation($category_id, $task_id, $connect)
     }
 }
 
+/**
+ * Prihlasen li klient
+ */
 function isLogin()
 {
     if (isset($_SESSION['userId'])) {
-        $user_id = $_SESSION['userId'];
-        return $user_id;
+        return $_SESSION['userId'];
     } else {
-        error("Not login", 403);
+        error("Not login", 409);
         return null;
     }
 }
 
-function isUserExist($username, $email, $connect)
+function isUserExist($username, $email)
 {
+    global $conn;
     $sql = "select username, email from users where username=? or email=?";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "ss", $username, $email);
@@ -642,14 +835,60 @@ function isUserExist($username, $email, $connect)
     }
 }
 
-function isOwnerOfTask($taskId, $connect)
+function emailExist($email)
 {
+    global $conn;
+    $sql = "select email from users where email=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+        $resultcheck = mysqli_stmt_num_rows($stmt);
+        if ($resultcheck > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+function usernameExist($username)
+{
+    global $conn;
+    $sql = "select username from users where username=?";
+    $stmt = mysqli_stmt_init($conn);
+    if (!mysqli_stmt_prepare($stmt, $sql)) {
+        error("sql error", 500);
+        exit();
+    } else {
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+        $resultcheck = mysqli_stmt_num_rows($stmt);
+        if ($resultcheck > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+/**
+ * Current user je tvurcem tasku
+ */
+function isOwnerOfTask($taskId)
+{
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
     $sql = "select creator_id from task where Id='$taskId'";
-    $result = $connect->query($sql);
+    $result = $conn->query($sql);
     $row = mysqli_fetch_array($result);
     if ($row['creator_id'] == $user_id) {
         return true;
@@ -658,14 +897,18 @@ function isOwnerOfTask($taskId, $connect)
     }
 }
 
-function isOwnerOfCategory($categoryId, $connect)
+/**
+ * Current user je tvurcem category
+ */
+function isOwnerOfCategory($categoryId)
 {
+    global $conn;
     if (isLogin() === null) {
         exit();
     }
     $user_id = isLogin();
     $sql = "select creator_id from category where id='$categoryId'";
-    $result = $connect->query($sql);
+    $result = $conn->query($sql);
     $row = mysqli_fetch_array($result);
     if ($row['creator_id'] == $user_id) {
         return true;
@@ -674,32 +917,33 @@ function isOwnerOfCategory($categoryId, $connect)
     }
 }
 
-function checkPass($currnetPass, $user_id, $connect)
+function checkPass($currnetPass, $user_id)
 {
+    global $conn;
     $sql = "select password from users where id=?";
-    $stmt = mysqli_stmt_init($connect);
+    $stmt = mysqli_stmt_init($conn);
     if (!mysqli_stmt_prepare($stmt, $sql)) {
-        error("sql error", 400);
+        error("sql error", 500);
         exit();
     } else {
         mysqli_stmt_bind_param($stmt, "i", $user_id);
         //выполнить
         if (!mysqli_stmt_execute($stmt)) {
-            error("sql error", 400);
-            mysqli_error($connect);
+            error("sql error", 500);
+            mysqli_error($conn);
             exit();
         }
         $result = mysqli_stmt_get_result($stmt);
         if ($row = mysqli_fetch_assoc($result)) {
             $passCheck = password_verify($currnetPass, $row['password']);
             if (!$passCheck) {
-                error("wrong password", 400);
+                error("Current password is wrong", 400);
                 return false;
             } else {
                 return true;
             }
         }
-        error("No user", 404);
+        error("No user", 200);
         return false;
     }
 }
@@ -719,7 +963,18 @@ function success($message, $res_code)
     http_response_code($res_code);
     $res = [
         "status" => true,
-        "message" => "$message"
+        "message" => $message
+    ];
+    echo json_encode($res);
+}
+
+function postSuccess($message, $object_id)
+{
+    http_response_code(201);
+    $res = [
+        "status" => true,
+        "message" => "$message",
+        "id" => "$object_id"
     ];
     echo json_encode($res);
 }

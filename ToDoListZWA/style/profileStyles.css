@@ -1,0 +1,50 @@
+body {
+    color: rgb(0, 0, 0);
+    background-color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h2 {
+    margin: 0px;
+    padding: 0px;
+    display: inline;
+}
+
+#profileForm {
+    position: relative;
+    top: 40px;
+    left: 30%;
+    width: 40%;
+    /*float:left;*/
+}
+
+#changePass {
+    /*clear: both;*/
+    position: relative;
+    top: 100px;
+    left: 30%;
+    width: 40%;
+
+}
+
+#newPassBut {
+    position: relative;
+    top: 10px;
+    left: 70%;
+}
+
+#updateBut {
+    position: relative;
+    left: 64%;
+}
+
+#back2 {
+    position: relative;
+    top: 150px;
+    left: 45%;
+}
+
+.error {
+    border: 3px solid red !important;
+}
+

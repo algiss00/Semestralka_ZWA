@@ -14,8 +14,8 @@
 
     /api/task.php - create new task
     /api/category.php - create new category
-    /api/category.php?task_id=?&category_id=? - put task to category
-    /api/login.php?username=x&password=x - login
+    /api/category.php?task_id=?&category=? - put task to category, task belongs for only one category
+    /api/login.php - login
     /api/logout.php - logout
     /api/user.php - create new user
 
@@ -29,14 +29,16 @@
     DELETE:
 
     /api/task.php?id=? - delete task by id
-    /api/category.php?id=? - delete category by id
+    /api/category.php?id=? - delete category by id and delete all tasks in this category
     /api/category.php?category_id=?&task_id=? - delete task from category by id
 
 PRI VYTVORENI UCTU SE MUSI VYTVORIT CATEGORY TODAY TOMMOROW SOMEDAY
 //prirazeni tasku k userum future
 
 //USER VIDI JEN SVE TASKY
-//todo catch error in sql db like delete foreign keys
-//category zvlast pro kazdeho uzivatele vlastni category
-//to do rozdelit na jednoduche funkcie s parametry tim mensi funkce tim je lepsi!
-json encode for preobrozovat v json
+
+
+
+SQL DELETE:
+delete r1 from relation_task_categ as r1 where category_id= 31;
+delete t1 from task as t1 left join relation_task_categ as r1 on r1.task_id = t1.Id where r1.category_id = 31

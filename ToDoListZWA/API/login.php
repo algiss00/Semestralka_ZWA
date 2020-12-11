@@ -7,20 +7,20 @@ $method = $_SERVER['REQUEST_METHOD'];
 require "../methodsForApi/dbConnectMethods.php";
 
 if ($method == "POST") {
-    if (isset($_GET['username']) && isset($_GET['password'])) {
-        $username = $_GET['username'];
-        $password = $_GET['password'];
+    if (isset($_POST['username']) && isset($_POST['password'])) {
+        $username = $_POST['username'];
+        $password = $_POST['password'];
 
         $sql = "select * from users where username=?";
         $stmt = mysqli_stmt_init($conn);
         if (!mysqli_stmt_prepare($stmt, $sql)) {
-            error("sql error", 400);
+            error("sql error", 500);
             exit();
         } else {
             mysqli_stmt_bind_param($stmt, "s", $username);
             //выполнить
             if (!mysqli_stmt_execute($stmt)) {
-                error("sql error", 400);
+                error("sql error", 500);
                 mysqli_error($conn);
                 exit();
             }
@@ -36,7 +36,7 @@ if ($method == "POST") {
                     success("Login success", 200);
                 }
             } else {
-                error("No user", 404);
+                error("No user", 400);
                 exit();
             }
         }

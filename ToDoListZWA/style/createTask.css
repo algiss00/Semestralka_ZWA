@@ -1,0 +1,33 @@
+body {
+    color: rgb(0, 0, 0);
+    background-color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h2 {
+    margin: 0px;
+    padding: 0px;
+    display: inline;
+}
+
+#createTask {
+    position: relative;
+    top: 60px;
+    left: 15%;
+    width: 70%;
+}
+
+#back {
+    position: relative;
+    top: 10px;
+}
+
+#createTaskSub.ui.button {
+    position: relative;
+    top: 10px;
+    left: 40%;
+}
+
+.error {
+    border: 3px solid red !important;
+}

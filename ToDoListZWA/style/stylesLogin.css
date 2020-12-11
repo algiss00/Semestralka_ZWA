@@ -1,0 +1,89 @@
+body {
+    color: rgb(0, 0, 0);
+    background-color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h2 {
+    margin: 0px;
+    padding: 0px;
+}
+
+#login_form {
+    box-sizing: border-box;
+    padding-top: 15px;
+    padding-bottom: 10%;
+    margin: 5% auto;
+    text-align: center;
+    position: relative;
+    top: 50px;
+}
+
+.login input[type="text"],
+.login input[type="password"] {
+    background-color: #E7F6FF;
+    max-width: 400px;
+    width: 80%;
+    line-height: 3em;
+    font-family: 'Ubuntu', sans-serif;
+    margin: 1em 2em;
+    border-radius: 5px;
+    border: 2px solid #f2f2f2;
+    outline: none;
+    padding-left: 10px;
+}
+
+#loginBut {
+    height: 30px;
+    width: 100px;
+    background-color: #E7F6FF;
+    border: 1px solid #f2f2f2;
+    border-radius: 20px;
+    color: slategrey;
+    text-transform: uppercase;
+    font-family: 'Ubuntu', sans-serif;
+    cursor: pointer;
+    position: relative;
+    left: 120px;
+}
+
+#signUpBut {
+    height: 30px;
+    width: 100px;
+    background-color: #E7F6FF;
+    border: 1px solid #f2f2f2;
+    border-radius: 20px;
+    color: slategrey;
+    text-transform: uppercase;
+    font-family: 'Ubuntu', sans-serif;
+    cursor: pointer;
+    position: relative;
+    right: 120px;
+}
+
+.login h2 {
+    color: #AEAEAE;
+    position: relative;
+    right: 160px;
+    padding: 0px;
+    font-size: 17px;
+}
+
+.error {
+    border: 3px solid red !important;
+}
+
+#header {
+    position: relative;
+    bottom: 20px;
+    font-size: 40px;
+}
+
+/*#decor{*/
+/*    border:2px solid #E7F6FF;*/
+/*    background: #E7F6FF;*/
+/*    margin-bottom:80px;*/
+/*    margin-left:80%;*/
+/*    padding:10px;*/
+/*    border-radius:10px;*/
+/*}*/
