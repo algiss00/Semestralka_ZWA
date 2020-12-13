@@ -11,8 +11,7 @@
     <title>SignUp page</title>
 </head>
 <body>
-
-<div class="Signup" id="div" style="margin-right:10%;padding:1px 16px;height:1000px;">
+<div class="Signup" id="div">
     <form method="POST" id="Signup_form">
         <h1 id="header">SignUp</h1>
         <p>

@@ -292,8 +292,8 @@ function createMenuCat() {
         //in for objects key value 0:asd ...
         //of for arrays
         for (const item of res) {
-            let html = `<a class="teal item" id="menuLink_${escapeHtml(item[1])}" data-id="${escapeHtml(item[1])}" 
-                    style="text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
+            let html = `<a class="teal item hidenstyle" id="menuLink_${escapeHtml(item[1])}" data-id="${escapeHtml(item[1])}" 
+                    >
                     ${escapeHtml(item[0])}
                 <div class="ui teal left pointing label">${item[2]}</div>
             </a>`
@@ -408,8 +408,7 @@ function createTask(task) {
         <div class="ui button buttonShowMore" id="taskId_${task.Id}" data-id="${escapeHtml(task.Id)}" data-title="${escapeHtml(task.title)}" data-desc="${escapeHtml(task.description)}"
         data-deadline="${escapeHtml(task.deadline)}" data-status = ${escapeHtml(task.status)}>More</div>
     </div>
-    <div class="content task-name" style="text-overflow: ellipsis; white-space: nowrap;
-  overflow: hidden;">
+    <div class="content task-name hidenstyle2" >
         ${decodeURIComponent(escapeHtml(task.title))}
     </div>
     </div>`;
@@ -430,8 +429,7 @@ async function createCategory(title, id, cat) {
     }
     let html = '<div class="card">' +
         `                <div class="content" id="${id}">` +
-        `                    <div class="header" style="text-overflow: ellipsis; white-space: nowrap;
-  overflow: hidden;">${escapeHtml(title)}
+        `                    <div class="header hidenstyle2" >${escapeHtml(title)}
                                  </div> ` +
         `<i class="right blue pencil alternate icon buttonEdit" id="catId_${escapeHtml(cat.id)}" 
                                 data-title="${escapeHtml(cat.title)}" data-id="${escapeHtml(cat.id)}"

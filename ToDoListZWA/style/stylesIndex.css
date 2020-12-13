@@ -70,3 +70,15 @@ div #newCat {
     position: relative;
     left: 50%;
 }
+
+.hidenstyle {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.hidenstyle2 {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}

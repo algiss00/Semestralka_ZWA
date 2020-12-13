@@ -28,10 +28,9 @@ function registrUser(e) {
 function processResponse(e) {
     var user = document.getElementById("username");
     var email = document.getElementById("email");
+    var surname = document.getElementById("surname");
     var data = xhr.response;
     var parseData = JSON.parse(data);
-    console.log("this is parse data ")
-    console.log(parseData);
     if (parseData.status === false) {
         alert(parseData.message);
         user.classList.add("error");
@@ -40,6 +39,8 @@ function processResponse(e) {
         user.classList.remove("error");
         email.classList.remove("error");
         alert("Success");
+        surname.value = '';
+        email.value = '';
         window.location.assign("../html/loginPage.php")
     }
 }
