@@ -37,9 +37,9 @@ function changePass(e) {
         currentPassword: $('#currPass').val(),
         newPassword: $('#newPass').val(),
     }
-    var url = "../API/user.php?changePassword";
+    var url = "../API/user.php?updateUser=&changePassword";
     xhrChangePass.addEventListener('load', changePassResponose);
-    xhrChangePass.open('PUT', url, true);
+    xhrChangePass.open('POST', url, true);
     xhrChangePass.send(JSON.stringify(userPass));
 
 }
@@ -79,7 +79,6 @@ function currentUserResponse(e) {
     var name = document.getElementById("name");
     var data = xhrCurrUser.response;
     var parseData = JSON.parse(data);
-    console.log(parseData)
     name.value = parseData.name;
     surname.value = parseData.surname;
     username.value = parseData.username;
@@ -88,9 +87,9 @@ function currentUserResponse(e) {
 
 function deleteProfile(e) {
     if (confirm("Delete profile?")) {
-        var url = "../API/user.php";
+        var url = "../API/user.php?deleteUser=";
         xhrDelete.addEventListener('load', deleteProcess);
-        xhrDelete.open('DELETE', url, true);
+        xhrDelete.open('POST', url, true);
         xhrDelete.send();
     }
 }
@@ -117,9 +116,9 @@ function updateProfile(e) {
         surname: $('#surname').val(),
         email: $('#email').val()
     }
-    var url = "../API/user.php";
+    var url = "../API/user.php?updateUser=";
     xhrUpdateProf.addEventListener('load', processResponse);
-    xhrUpdateProf.open('PUT', url, true);
+    xhrUpdateProf.open('POST', url, true);
     xhrUpdateProf.send(JSON.stringify(user));
 }
 

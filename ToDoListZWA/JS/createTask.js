@@ -21,13 +21,14 @@ async function createTask(e) {
 
     let newTask = await $.ajax({
         type: "POST",
-        url: "../API/task.php",
+        url: "../API/task.php?addTask=",
         data: JSON.stringify(task),
     }).fail(failTask);
     console.log(newTask)
 
     var category = document.getElementById("category").value;
-    var url = "../API/category.php?" + "task_id=" + newTask.id + "&category=" + encodeURIComponent(category);
+    var url = "../API/category.php?addTaskToCategory=" + "&task_id=" + newTask.id + "&category="
+        + encodeURIComponent(category);
     xhr.addEventListener('load', processResponse);
     xhr.open('POST', url, true);
     xhr.send();

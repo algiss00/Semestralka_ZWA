@@ -13,9 +13,24 @@ $method = $_SERVER['REQUEST_METHOD'];
 require "../methodsForApi/dbConnectMethods.php";
 
 if ($method == "POST") {
-    $res = file_get_contents("php://input", true);
-    $task = json_decode($res, true);
-    addTask($task['title'], $task['description'], $task['deadline'], $task['status'], $task['category']);
+    if (isset($_GET['addTask'])) {
+        $res = file_get_contents("php://input", true);
+        $task = json_decode($res, true);
+        addTask($task['title'], $task['description'], $task['deadline'], $task['status'], $task['category']);
+    } else if (isset($_GET['updateTask'])) {
+        if (isset($_GET['id'])) {
+            $task_id = $_GET['id'];
+            $res = file_get_contents("php://input", true);
+            $task = json_decode($res);
+            updateTask($task_id, $task->title, $task->description, $task->deadline, $task->status);
+        }
+    } else if (isset($_GET['deleteTask'])) {
+        if (isset($_GET['id'])) {
+            $task_id = $_GET['id'];
+            deleteTask($task_id);
+        }
+    }
+
 } else if ($method == "GET") {
     if (isset($_GET['id'])) {
         $task_id = $_GET['id'];
@@ -24,18 +39,18 @@ if ($method == "POST") {
         $res = getAllUsersTasks();
         echo $res;
     }
-} else if ($method == "PUT") {
-    if (isset($_GET['id'])) {
-        $task_id = $_GET['id'];
-        $res = file_get_contents("php://input", true);
-        $task = json_decode($res);
-        updateTask($task_id, $task->title, $task->description, $task->deadline, $task->status);
-    }
-} else if ($method == "DELETE") {
-    if (isset($_GET['id'])) {
-        $task_id = $_GET['id'];
-        deleteTask($task_id);
-    }
-}
+} //else if ($method == "PUT") {
+//    if (isset($_GET['id'])) {
+//        $task_id = $_GET['id'];
+//        $res = file_get_contents("php://input", true);
+//        $task = json_decode($res);
+//        updateTask($task_id, $task->title, $task->description, $task->deadline, $task->status);
+//    }
+//} else if ($method == "DELETE") {
+//    if (isset($_GET['id'])) {
+//        $task_id = $_GET['id'];
+//        deleteTask($task_id);
+//    }
+//}
 
 

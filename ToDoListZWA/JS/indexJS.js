@@ -141,9 +141,9 @@ function updateCategoryModal(e) {
         title: $('#categTitle').val(),
         position_list: parseInt($('#categPosition').val())
     }
-    var url = "../API/category.php?id=" + categoryId;
+    var url = "../API/category.php?updateCategory=&id=" + categoryId;
     xhrUpdateCategory.addEventListener('load', processResponseCategoryUpdate);
-    xhrUpdateCategory.open('PUT', url, true);
+    xhrUpdateCategory.open('POST', url, true);
     xhrUpdateCategory.send(JSON.stringify(catupdate));
 }
 
@@ -181,9 +181,9 @@ function processResponseCategoryUpdate() {
  */
 function deleteTask(e) {
     if (confirm("Delete task?")) {
-        var url = "../API/task.php?id=" + taskId;
+        var url = "../API/task.php?deleteTask=&id=" + taskId;
         xhrDeleteTask.addEventListener('load', processResponseDelete);
-        xhrDeleteTask.open('DELETE', url, true);
+        xhrDeleteTask.open('POST', url, true);
         xhrDeleteTask.send();
     }
 }
@@ -220,9 +220,9 @@ function updateTask(e) {
         deadline: encodeURIComponent($('#deadlineModal').val()),
         status: encodeURIComponent($('#statusTaskModal').val())
     }
-    var url = "../API/task.php?id=" + taskId;
+    var url = "../API/task.php?updateTask=&id=" + taskId;
     xhrUpdateTask.addEventListener('load', processResponseUpdate);
-    xhrUpdateTask.open('PUT', url, true);
+    xhrUpdateTask.open('POST', url, true);
     xhrUpdateTask.send(JSON.stringify(taskUpdate));
 }
 
@@ -345,7 +345,7 @@ async function createCatAPI() {
     }
     let newCat = await $.ajax({
         type: "POST",
-        url: "../API/category.php",
+        url: "../API/category.php?addCateogry=",
         data: JSON.stringify(category),
     }).fail(onFailCategory);
     let cats = $('#cats')
@@ -478,9 +478,9 @@ function deleteCategory(e) {
     catIdTrash = catId;
     if (confirm("Delete category?")) {
         console.log("ID CAT:" + catId)
-        var url = "../API/category.php?id=" + catId;
+        var url = "../API/category.php?deleteCategory=&id=" + catId;
         xhrDeleteCategory.addEventListener('load', processResponseDeleteCategory);
-        xhrDeleteCategory.open('DELETE', url, true);
+        xhrDeleteCategory.open('POST', url, true);
         xhrDeleteCategory.send();
     }
 }

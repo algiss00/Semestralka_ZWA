@@ -19,7 +19,7 @@ function registrUser(e) {
         surname: $('#surname').val(),
         email: $('#email').val()
     }
-    var url = "../API/user.php";
+    var url = "../API/user.php?addUser=";
     xhr.addEventListener('load', processResponse);
     xhr.open('POST', url, true);
     xhr.send(JSON.stringify(user));

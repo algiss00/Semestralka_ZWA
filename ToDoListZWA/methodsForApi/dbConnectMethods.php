@@ -10,9 +10,13 @@ if (!isset($_SESSION)) {
     session_start();
 }
 
-$user = 'root';
-$password = '';
-$dbname = 'todolistdb';
+$user = 'skriaalg';
+$password = 'webove aplikace';
+$dbname = 'skriaalg';
+
+//$user = 'root';
+//$password = '';
+//$dbname = 'todolistdb';
 
 $conn = mysqli_connect('localhost', $user, $password, $dbname)
 or die("Unable to connect" . mysqli_connect_error());
